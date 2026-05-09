@@ -1,0 +1,38 @@
+# Archivos generados / uploads de usuarios
+uploads/
+generated_pdfs/
+
+# Dependencias Node
+node_modules/
+npm-debug.log*
+yarn-error.log
+
+# Variables de entorno (¡nunca subir!)
+.env
+.env.local
+.env.*.local
+
+# Sistemas operativos
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python (si tu backend es Python)
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+
+# Logs
+*.log
+logs/
+
+# Archivos temporales
+*.tmp
+*.temp

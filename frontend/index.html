@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BABIDI NÓMINA 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800;900&family=Barlow+Condensed:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/login.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<link rel="stylesheet" href="css/upload.css">
+<link rel="stylesheet" href="css/empleados.css">
+<link rel="stylesheet" href="css/tabs.css">
+<link rel="stylesheet" href="css/modales.css">
+<link rel="stylesheet" href="css/email.css">
+<link rel="stylesheet" href="css/contactos.css">
+<link rel="stylesheet" href="css/usuarios.css">
+<link rel="stylesheet" href="css/historial.css">
+<link rel="stylesheet" href="css/envio.css">
+<link rel="stylesheet" href="css/overlays.css">
+</head>
+<body>
+
+<!-- LOGIN SHELL -->
+<div id="loginShell">
+  <div class="login-wrap">
+    <div class="login-brand-big">
+      <svg class="big-icon" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="72" height="72" rx="16" fill="#f5c518"/>
+        <path d="M12 54 L24 20 L32 38 L38 24 L52 54Z" fill="#0a0c12" opacity=".9"/>
+        <circle cx="32" cy="36" r="7" fill="#0a0c12"/>
+        <path d="M6 36 Q36 16 66 36" stroke="#0a0c12" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+      </svg>
+      <h1>BABIDI<span>NÓMINA</span></h1>
+      <p>Sistema de Gestión de Nómina Empresarial</p>
+    </div>
+    <div class="login-card">
+      <div class="lcard-section-title">Acceso al Sistema</div>
+      <label class="lf-label">Usuario</label>
+      <input id="inpUser" class="lf-input" type="text" placeholder="Ingrese usuario" autocomplete="username">
+      <label class="lf-label">Contraseña</label>
+      <input id="inpPass" class="lf-input" type="password" placeholder="Ingrese contraseña" autocomplete="current-password">
+      <button class="btn-login" id="btnLogin">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        INGRESAR
+      </button>
+      <div id="loginErr" class="login-error"></div>
+      <button class="admin-toggle" id="btnAdminToggle">⚙ administración de accesos</button>
+      <div class="admin-panel" id="adminPanel">
+        <h4>Gestión de usuarios</h4>
+        <div class="admin-list" id="adminUserList"></div>
+        <div class="admin-add-row">
+          <input class="lf-input" id="newAdminUser" placeholder="Usuario" autocomplete="off">
+          <input class="lf-input" id="newAdminPass" type="password" placeholder="Contraseña">
+          <select id="newAdminRole"><option value="admin">Admin</option><option value="viewer">Lectura</option></select>
+          <button class="btn-admin-add" onclick="addAdminUser()">+ Agregar</button>
+        </div>
+      </div>
+    </div>
+    <div class="login-footer">Sistema protegido · v2.1.0 · © 2026 BABIDI</div>
+  </div>
+</div>
+
+<!-- APP SHELL -->
+<div class="app" id="appShell" style="display:none">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">
+        <svg class="brand-icon" viewBox="0 0 36 36">
+          <rect width="36" height="36" rx="8" fill="#f5c518"/>
+          <path d="M7 26 L13 12 L18 20 L22 14 L29 26Z" fill="#0a0c12" opacity=".9"/>
+          <circle cx="18" cy="18" r="3.5" fill="#0a0c12"/>
+          <path d="M4 18 Q18 10 32 18" stroke="#0a0c12" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </svg>
+        <div>
+          <div class="brand-name">BABIDI<span>NÓM</span></div>
+        </div>
+      </div>
+      <div class="brand-sub">Gestión de Nómina</div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="sidebarAvatar">A</div>
+      <div>
+        <div class="user-name" id="sidebarUserName">admin</div>
+        <div class="user-status">● ACTIVO</div>
+      </div>
+      <div class="user-dot"></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Principal</div>
+      <div class="nav-item active" data-view="dashboardView" onclick="navTo('dashboardView',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" data-view="cargarView" onclick="navTo('cargarView',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Cargar Nómina
+      </div>
+      <div class="nav-item" data-view="empleadosView" onclick="navTo('empleadosView',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Empleados
+      </div>
+      <div class="nav-item" data-view="desprendiblesView" onclick="navTo('desprendiblesView',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Desprendibles
+      </div>
+      <div class="nav-item" data-view="envioView" onclick="navTo('envioView',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Envío Masivo
+      </div>
+      <div class="nav-item" data-view="historialView" onclick="navTo('historialView',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="12 8 12 12 14 14"/><path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5V15h5"/></svg>
+        Historial
+      </div>
+      <div class="nav-section">Administración</div>
+      <div class="nav-item" data-view="usuariosView" onclick="navTo('usuariosView',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg>
+        Usuarios
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="btnLogout">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Cerrar Sesión
+      </button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="topbarTitle">Dashboard</div>
+      <div class="topbar-badge" id="topbarPagoBadge" style="display:none">
+        <div class="dot"></div>
+        <span id="topbarPagoText">Próximo pago: día 10</span>
+      </div>
+      <div class="topbar-clock" id="topbarClock">—</div>
+      <div class="topbar-user-chip">
+        <div class="topbar-user-dot"></div>
+        <span id="topbarUserLabel">admin</span>
+      </div>
+    </div>
+
+    <div class="content" id="mainContent">
+
+      <!-- DASHBOARD -->
+      <div id="dashboardView" class="view active">
+        <div class="page-header">
+          <div class="page-title">Dashboard</div>
+          <div class="page-sub">Panel de control de nómina — <span id="dashPeriodo">Sin nómina cargada</span></div>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="kpi-card-accent" style="background:var(--gold)"></div><div class="kpi-val" id="kpiEmp">—</div><div class="kpi-lbl">Empleados</div></div>
+          <div class="kpi-card"><div class="kpi-card-accent" style="background:var(--teal)"></div><div class="kpi-val" id="kpiCiudades">—</div><div class="kpi-lbl">Ciudades</div></div>
+          <div class="kpi-card"><div class="kpi-card-accent" style="background:var(--green)"></div><div class="kpi-val" id="kpiNomina" style="color:var(--teal)">—</div><div class="kpi-lbl">Total Nómina</div></div>
+          <div class="kpi-card"><div class="kpi-card-accent" style="background:var(--blue)"></div><div class="kpi-val" id="kpiCorte">—</div><div class="kpi-lbl">Corte</div></div>
+        </div>
+        <div class="action-grid">
+          <div class="action-card" onclick="navTo('cargarView',document.querySelector('[data-view=cargarView]'))">
+            <div class="action-card-ico">📂</div><div class="action-card-txt"><h4>Cargar Nómina</h4><p>Importar archivo Excel</p></div>
+          </div>
+          <div class="action-card" onclick="navTo('empleadosView',document.querySelector('[data-view=empleadosView]'));if(allEmployees.length)buildPanel()">
+            <div class="action-card-ico">👥</div><div class="action-card-txt"><h4>Ver Empleados</h4><p id="dashEmpSub">Sin empleados cargados</p></div>
+          </div>
+          <div class="action-card" onclick="navTo('desprendiblesView',document.querySelector('[data-view=desprendiblesView]'))">
+            <div class="action-card-ico">📄</div><div class="action-card-txt"><h4>Desprendibles</h4><p>Generar comprobantes PDF</p></div>
+          </div>
+          <div class="action-card" onclick="navTo('envioView',document.querySelector('[data-view=envioView]'))">
+            <div class="action-card-ico">✉️</div><div class="action-card-txt"><h4>Envío Masivo</h4><p>Correos con Brevo API</p></div>
+          </div>
+        </div>
+        <div class="upload-zone-wrap">
+          <label class="upload-zone" id="dropZone">
+            <input type="file" id="fileInput" accept=".xlsx,.xls">
+            <div class="upload-ico-wrap">📊</div>
+            <h3>Arrastra tu archivo aquí</h3>
+            <p>o haz clic para seleccionar</p>
+            <div class="upload-btn">Formatos: .xlsx · .xls</div>
+          </label>
+          <div class="hist-card">
+            <h3>📁 Archivos Recientes</h3>
+            <div id="histList"></div>
+          </div>
+        </div>
+        <div style="margin-top:14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:14px 18px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:8px">Fechas de Pago</div>
+          <div class="pago-chips"><span class="pago-chip">10</span><span class="pago-chip">15</span><span class="pago-chip">25</span><span class="pago-chip">30</span></div>
+        </div>
+      </div>
+
+      <!-- CARGAR -->
+      <div id="cargarView" class="view">
+        <div class="page-header">
+          <div class="page-title">Cargar Nómina</div>
+          <div class="page-sub">Suba un archivo Excel con los datos de nómina</div>
+        </div>
+        <label class="upload-zone" id="dropZone2" style="max-width:640px;min-height:280px">
+          <input type="file" id="fileInput2" accept=".xlsx,.xls">
+          <div class="upload-ico-wrap" style="width:70px;height:70px;font-size:30px">📂</div>
+          <h3>Arrastra tu archivo aquí</h3>
+          <p>o haz clic para seleccionar</p>
+          <div class="upload-btn" style="margin-top:8px">Formatos: .xlsx · .xls · .csv</div>
+        </label>
+      </div>
+
+      <!-- EMPLEADOS -->
+      <div id="empleadosView" class="view">
+        <div class="page-header" style="display:flex;align-items:center;gap:16px">
+          <div style="flex:1">
+            <div class="page-title">Empleados</div>
+            <div class="page-sub" id="empSub">Cargue un archivo Excel para ver empleados</div>
+          </div>
+          <button class="btn-generar-pdf" style="background:var(--bg2);color:var(--text2);border:1px solid var(--border)" onclick="navTo('cargarView',document.querySelector('[data-view=cargarView]'))">+ Cargar Excel</button>
+        </div>
+        <div id="empleadosPanel">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:var(--text3);gap:10px">
+            <div style="font-size:36px">⏳</div>
+            <div style="font-family:var(--mono);font-size:13px">Cargue un archivo Excel para ver empleados</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DESPRENDIBLES -->
+      <div id="desprendiblesView" class="view">
+        <div class="page-header" style="display:flex;align-items:center;gap:16px">
+          <div style="flex:1">
+            <div class="page-title">Desprendibles de Nómina</div>
+            <div class="page-sub">Comprobantes individuales de pago</div>
+          </div>
+          <div class="desprendibles-toolbar">
+            <input class="filt-input" id="despSearch" placeholder="🔍 Buscar empleado..." style="max-width:220px" oninput="renderDesprendibles()">
+            <button class="btn-generar-pdf" onclick="downloadAllPdfs()">↓ Generar Todos los PDF</button>
+          </div>
+        </div>
+        <div id="desprendiblesPanel">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:var(--text3);gap:10px">
+            <div style="font-size:36px">⏳</div>
+            <div style="font-family:var(--mono);font-size:13px">Cargue un archivo Excel para generar desprendibles</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ENVIO MASIVO -->
+      <div id="envioView" class="view">
+        <div class="page-header">
+          <div class="page-title">Envío Masivo de Correos</div>
+          <div class="page-sub">Envía desprendibles PDF via <strong style="color:var(--blue)">Brevo API</strong> — sin servidor requerido</div>
+        </div>
+
+        <!-- ══ CONFIGURACIÓN BREVO ══ -->
+        <div class="smtp-card">
+          <h3>🔑 Configuración Brevo API</h3>
+
+          <!-- API KEY -->
+          <div style="margin-bottom:14px">
+            <div class="smtp-label" style="margin-bottom:6px">API Key de Brevo</div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input class="smtp-inp" id="brevoApiKey" type="password"
+                placeholder="xkeysib-xxxxxxxxxxxxxxxx..."
+                style="font-family:var(--mono);font-size:12px;letter-spacing:.5px;flex:1"
+                oninput="saveBrevoConfig()">
+              <button class="tb-btn" onclick="toggleBrevoKey()" id="btnShowKey" style="white-space:nowrap">👁 Ver</button>
+              <button class="btn-smtp-test" style="padding:8px 16px;font-size:12px" onclick="testBrevoConnection()">⚡ Probar</button>
+            </div>
+            <div style="font-size:11px;color:var(--text3);margin-top:6px">
+              Obtén tu API Key en <a href="https://app.brevo.com/settings/keys/api" target="_blank" style="color:var(--blue)">app.brevo.com → Configuración → API Keys</a>
+            </div>
+          </div>
+
+          <!-- REMITENTE -->
+          <div class="smtp-grid" style="margin-bottom:14px">
+            <div class="smtp-field">
+              <label class="smtp-label">Nombre del remitente</label>
+              <input class="smtp-inp" id="brevoSenderName" value="BABIDI NÓMINA" placeholder="BABIDI NÓMINA" oninput="saveBrevoConfig()">
+            </div>
+            <div class="smtp-field">
+              <label class="smtp-label">Correo remitente <span style="color:var(--red);font-size:10px">(verificado en Brevo)</span></label>
+              <input class="smtp-inp" id="brevoSenderEmail" placeholder="nomina@tuempresa.com" type="email" oninput="saveBrevoConfig()">
+            </div>
+          </div>
+
+          <!-- ASUNTO Y CUERPO -->
+          <div class="smtp-field" style="margin-bottom:10px">
+            <label class="smtp-label">Asunto del correo</label>
+            <input class="smtp-inp" id="brevoSubject" value="Desprendible de Nómina — {{periodo}}" oninput="saveBrevoConfig()">
+          </div>
+          <div class="smtp-field" style="margin-bottom:14px">
+            <label class="smtp-label">Cuerpo del mensaje (HTML permitido)</label>
+            <textarea class="smtp-textarea" id="brevoBody" oninput="saveBrevoConfig()">Estimado(a) <strong>{{nombre}}</strong>,<br><br>
+Adjunto encontrará su desprendible de nómina del período <strong>{{periodo}}</strong>.<br><br>
+Atentamente,<br>
+<strong>BABIDI LOGÍSTICA</strong></textarea>
+          </div>
+
+          <div class="smtp-actions">
+            <span id="brevoStatusBadge" class="status-badge pending">⚪ Sin configurar</span>
+            <button class="btn-smtp-send" onclick="openEmailModal()">✉ Enviar a Todos</button>
+          </div>
+        </div>
+
+        <div class="estado-card">
+          <h3>📊 Estado de Último Envío</h3>
+          <div id="envioEstado"><div class="estado-empty">Sin envíos recientes</div></div>
+        </div>
+      </div>
+
+      <!-- HISTORIAL -->
+      <div id="historialView" class="view">
+        <div class="page-header">
+          <div class="page-title">Historial de Archivos</div>
+          <div class="page-sub">Archivos Excel cargados anteriormente</div>
+        </div>
+        <div id="historialBody">
+          <div class="hist-view-empty">
+            <div style="font-size:36px">📁</div>
+            <div>No hay archivos guardados</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- USUARIOS -->
+      <div id="usuariosView" class="view">
+        <div class="page-header" style="display:flex;align-items:center;gap:16px">
+          <div style="flex:1">
+            <div class="page-title">Gestión de Usuarios</div>
+            <div class="page-sub">Administradores del sistema</div>
+          </div>
+          <button class="btn-nuevo-usuario" onclick="openAdminMgr()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            + Nuevo Usuario
+          </button>
+        </div>
+        <div class="users-grid" id="usersGrid"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- SLIP MODAL -->
+<div id="slipOverlay" class="overlay">
+  <div class="modal-card slip-modal">
+    <div class="slip-head">
+      <h3>📄 Desprendible de Pago</h3>
+      <div style="flex:1"></div>
+      <button class="btn-send-single" id="btnSendSingle" style="display:none">✉️ Enviar</button>
+      <button class="tb-btn red" id="btnDownloadPdf">⬇ PDF</button>
+      <button class="tb-btn" onclick="closeSlip()">✕</button>
+    </div>
+    <div class="slip-body"><div id="slipContent"></div></div>
+  </div>
+</div>
+
+<!-- EDIT CONTACT MODAL -->
+<div id="editContactOverlay" class="overlay">
+  <div class="modal-card ec-modal">
+    <div class="modal-head">
+      <h3>✏️ Editar Datos de Contacto</h3>
+      <div id="ecEmpSub" style="font-size:12px;color:var(--text3);font-family:var(--mono)">—</div>
+      <button class="tb-btn" onclick="closeEditContact()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="ec-notice">Cambios guardados localmente. <strong>No modifican el Excel original.</strong></div>
+      <div class="ec-field-group">
+        <label class="ec-field-label">Correo electrónico <span class="ec-original" id="ecOrigCorreo">—</span></label>
+        <input class="ec-inp" id="ecInpCorreo" type="email" placeholder="correo@ejemplo.com" oninput="ecMarkChanged(this,'correo')">
+      </div>
+      <div class="ec-field-group">
+        <label class="ec-field-label">Cuenta bancaria <span class="ec-original" id="ecOrigCuenta">—</span></label>
+        <input class="ec-inp" id="ecInpCuenta" type="text" placeholder="Banco · Tipo · Número" oninput="ecMarkChanged(this,'cuenta')">
+      </div>
+      <div class="ec-log-section">
+        <div class="ec-log-title">Historial de cambios</div>
+        <div id="ecLogList" class="ec-log-list"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="ec-clear-btn" onclick="clearContactEdits()">🗑 Borrar cambios</button>
+      <button class="tb-btn" onclick="closeEditContact()">Cancelar</button>
+      <button class="tb-btn" style="background:var(--gold3);border-color:rgba(245,197,24,.4);color:var(--gold)" onclick="saveEditContact()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- EMAIL MODAL -->
+<div id="emailOverlay" class="overlay">
+  <div class="modal-card email-modal">
+    <div class="modal-head">
+      <h3>✉️ Enviar Desprendibles — Brevo API</h3>
+      <button class="tb-btn" id="btnCloseEmail">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="brevoConnStatus" style="margin-bottom:12px">
+        <span id="emailBrevoStatusBadge" class="status-badge pending">⚪ Verificando API Key...</span>
+      </div>
+      <div class="email-info-box" id="emailStats">
+        <div class="stat"><span>Total empleados cargados</span><strong id="statTotal">—</strong></div>
+        <div class="stat"><span>Con correo registrado</span><strong id="statConCorreo" style="color:var(--green)">—</strong></div>
+        <div class="stat"><span>Sin correo (se omitirán)</span><strong id="statSinCorreo" style="color:var(--gold)">—</strong></div>
+        <div class="stat"><span>Remitente configurado</span><strong id="statRemitente" style="color:var(--blue)">—</strong></div>
+      </div>
+      <div class="email-progress-wrap" id="emailProgressWrap">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text3)">
+          <span id="emailProgressLabel">Enviando...</span><span id="emailProgressPct">0%</span>
+        </div>
+        <div class="email-progress-bar"><div class="email-progress-fill" id="emailProgressFill"></div></div>
+        <div id="emailTimeEst" style="font-size:11px;color:var(--text3);margin-top:4px"></div>
+        <div class="email-log" id="emailLog"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="tb-btn" id="btnCloseEmail2">Cancelar</button>
+      <button class="tb-btn green" id="btnStartSend" style="min-width:160px">🚀 Enviar todos</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN MGR MODAL -->
+<div id="adminMgrOverlay" class="overlay">
+  <div class="modal-card admin-mgr-modal">
+    <div class="modal-head">
+      <h3>👥 Gestión de Usuarios</h3>
+      <button class="tb-btn" onclick="document.getElementById('adminMgrOverlay').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="admin-list" id="adminMgrList" style="max-height:220px;overflow-y:auto;margin-bottom:14px"></div>
+      <div style="border-top:1px solid var(--border);padding-top:14px">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px">Agregar nuevo usuario</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input class="lf-input" id="mgrNewUser" placeholder="Usuario" autocomplete="off" style="margin-bottom:0;flex:1">
+          <input class="lf-input" id="mgrNewPass" type="password" placeholder="Contraseña" style="margin-bottom:0;flex:1">
+        </div>
+        <div style="display:flex;gap:8px">
+          <select id="mgrNewRole" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:9px 12px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none;flex:1">
+            <option value="admin">Administrador</option><option value="viewer">Solo lectura</option>
+          </select>
+          <button class="tb-btn red" onclick="addUserFromMgr()">+ Agregar</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="tb-btn" onclick="document.getElementById('adminMgrOverlay').classList.remove('open')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CITY MODAL -->
+<div id="cityOverlay" class="overlay">
+  <div class="modal-card city-modal">
+    <div class="modal-head">
+      <h3 id="cityModalTitle">📊 Resumen por Ciudad</h3>
+      <button class="tb-btn" onclick="document.getElementById('cityOverlay').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body" id="cityModalBody"></div>
+    <div class="modal-foot">
+      <button class="tb-btn red" id="btnExportCityPdf">📄 Exportar PDF</button>
+      <button class="tb-btn" onclick="document.getElementById('cityOverlay').classList.remove('open')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- INACTIVIDAD -->
+<div id="inactiveOverlay">
+  <div class="inactive-box">
+    <div style="font-size:32px;margin-bottom:10px">⏱</div>
+    <h3>Sesión por expirar</h3>
+    <p>Por seguridad, la sesión se cerrará automáticamente.</p>
+    <div class="inactive-timer" id="inactiveTimer">30</div>
+    <button class="btn-login" onclick="resetInactivity()" style="border-radius:12px;padding:11px 28px;width:auto">Seguir activo</button>
+  </div>
+</div>
+
+<!-- ERROR -->
+<div id="errOverlay" class="overlay">
+  <div class="err-modal">
+    <div class="err-head">⚠️ Error</div>
+    <div class="err-body" id="errMsg"></div>
+    <div class="err-foot"><button class="tb-btn" onclick="closeErr()">Cerrar</button></div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div id="loadingOverlay" class="loading-overlay">
+  <div class="loading-box">
+    <div class="loading-pct" id="loadPct">0%</div>
+    <div class="loading-bar-wrap"><div class="loading-bar-fill" id="loadBar"></div></div>
+    <div class="loading-msg" id="loadMsg">Procesando...</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="js/state.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/historial.js"></script>
+<script src="js/contactos.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/empleados.js"></script>
+<script src="js/pdf.js"></script>
+<script src="js/email.js"></script>
+</body>
+</html>

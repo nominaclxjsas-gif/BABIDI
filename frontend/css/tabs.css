@@ -1,0 +1,11 @@
+.sheet-tabs-wrap{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 22px;display:flex;gap:2px;overflow-x:auto;flex-shrink:0;margin:-24px -24px 16px -24px}
+.sheet-tabs-wrap::-webkit-scrollbar{height:3px}
+.sheet-tabs-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.sheet-tab{background:transparent;border:none;border-bottom:2px solid transparent;padding:11px 14px;color:var(--text3);cursor:pointer;font-family:var(--sans);font-size:12px;font-weight:700;white-space:nowrap;transition:all .15s;letter-spacing:.3px;text-transform:uppercase}
+.sheet-tab:hover{color:var(--text)}
+.sheet-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.tb-btn{background:transparent;border:1px solid var(--border2);border-radius:var(--r);padding:7px 13px;color:var(--text2);cursor:pointer;font-family:var(--sans);font-size:12px;font-weight:600;transition:all .15s;white-space:nowrap}
+.tb-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold4)}
+.tb-btn.red{background:var(--red2);border-color:rgba(230,57,70,.4);color:var(--red)}
+.tb-btn.red:hover{background:rgba(230,57,70,.2)}
+.tb-btn.green{background:rgba(45,198,83,.1);border-color:rgba(45,198,83,.4);color:var(--green)}

@@ -1,5 +1,5 @@
 {
-  "name": "BABIDI",
+  "name": "BABIDI NÓMINA",
   "short_name": "BABIDI",
   "description": "Sistema de nómina BABIDI",
   "start_url": "/",
@@ -11,7 +11,7 @@
       "src": "favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }

@@ -36,12 +36,7 @@
 <div id="loginShell">
   <div class="login-wrap">
     <div class="login-brand-big">
-      <svg class="big-icon" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="72" height="72" rx="16" fill="#f5c518"/>
-        <path d="M12 54 L24 20 L32 38 L38 24 L52 54Z" fill="#0a0c12" opacity=".9"/>
-        <circle cx="32" cy="36" r="7" fill="#0a0c12"/>
-        <path d="M6 36 Q36 16 66 36" stroke="#0a0c12" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-      </svg>
+      <img class="big-icon" src="favicon.svg" width="72" height="72">
       <h1>BABIDI<span>NÓMINA</span></h1>
       <p>Sistema de Gestión de Nómina Empresarial</p>
     </div>
@@ -77,12 +72,7 @@
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="brand-logo">
-        <svg class="brand-icon" viewBox="0 0 36 36">
-          <rect width="36" height="36" rx="8" fill="#f5c518"/>
-          <path d="M7 26 L13 12 L18 20 L22 14 L29 26Z" fill="#0a0c12" opacity=".9"/>
-          <circle cx="18" cy="18" r="3.5" fill="#0a0c12"/>
-          <path d="M4 18 Q18 10 32 18" stroke="#0a0c12" stroke-width="2" fill="none" stroke-linecap="round"/>
-        </svg>
+        <img class="brand-icon" src="favicon.svg" width="36" height="36">
         <div>
           <div class="brand-name">BABIDI<span>NÓM</span></div>
         </div>
@@ -239,7 +229,7 @@
           </div>
           <div class="desprendibles-toolbar">
             <input class="filt-input" id="despSearch" placeholder="🔍 Buscar empleado..." style="max-width:220px" oninput="renderDesprendibles()">
-            <button class="btn-generar-pdf" onclick="downloadAllPdfs()">↓ Generar Todos los PDF</button>
+            <button class="btn-generar-pdf" onclick="downloadAllPdfs()" style="color:#ffffff">↓ Generar Todos los PDF</button>
           </div>
         </div>
         <div id="desprendiblesPanel">

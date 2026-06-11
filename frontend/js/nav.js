@@ -27,7 +27,9 @@ function navTo(viewId, navEl) {
 function updatePagoBadge() {
   const b = document.getElementById('topbarPagoBadge'), t = document.getElementById('topbarPagoText');
   if (!b || !t) return;
-  const today = new Date().getDate(), dias = [10,15,25,30];
+  const today = new Date().getDate();
+  const lastDayOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+  const dias = [15, 16, lastDayOfMonth];
   let next = dias.find(d => d > today) || dias[0];
   b.style.display = 'flex';
   t.textContent = `Próximo pago: día ${next} (en ${next > today ? next - today : next + 30 - today} días)`;

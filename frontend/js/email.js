@@ -47,6 +47,20 @@ async function testBrevoConnection() {
 }
 
 // ──────────────────────────────────────────────
+//  FECHAS DE PAGO
+// ──────────────────────────────────────────────
+function getFechasPago(emp) {
+  const lastDayOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+  const tipo = emp.tipo || emp.categoria || emp.area || '';
+  if (tipo.toLowerCase() === 'operativo') {
+    return {primera: 16, segunda: lastDayOfMonth};
+  } else if (tipo.toLowerCase() === 'administrativo') {
+    return {primera: 15, segunda: lastDayOfMonth};
+  }
+  return {primera: 15, segunda: lastDayOfMonth};
+}
+
+// ──────────────────────────────────────────────
 //  CONSTRUCCIÓN DEL CUERPO DEL CORREO
 // ──────────────────────────────────────────────
 function buildBrevoHtmlBody(emp) {

@@ -3,4 +3,5 @@
 // ══════════════════════════════════════════════
 
 let allEmployees = [], filtered = [], sortCol = -1, sortDir = 1,
-    page = 1, perPage = 100, currentFile = null, currentView = 'dashboardView';
+    page = 1, perPage = 100, currentFile = null, currentView = 'dashboardView',
+    currentPeriodo = '';

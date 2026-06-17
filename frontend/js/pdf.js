@@ -15,7 +15,7 @@ const TARIFA_2026 = {
   hf:      13991,
   hed:     9949,
   hedf:    17112,
-  hen:     13928,
+  hen:     13991,
   henf:    21091,
   rn:      2822,
   rnf:     9152,
@@ -283,7 +283,7 @@ ${SLIP_CSS}
     <tr>
       <td class="s-hdr-logo" style="width:120px">${logoSrc ? `<img src="${logoSrc}" alt="CL">` : ''}</td>
       <td class="s-hdr-title">
-        <div class="t1">Comprobante de Pago &mdash; ${esc(e.periodo)}</div>
+        <div class="t1">Comprobante de Pago &mdash; 16 al 9 de Junio</div>
         <div class="t2">¡Tu esfuerzo impulsa nuestra operación. Gracias por este corte de nómina!</div>
       </td>
       <td class="s-hdr-logo" style="width:120px;border-left:1px solid #1e3060;border-right:none">${logoSrc ? `<img src="${logoSrc}" alt="CL">` : ''}</td>
@@ -292,7 +292,7 @@ ${SLIP_CSS}
   <table style="border:${B}">
     <tr>
       <td class="lbl" style="width:130px">PERIODO DE PAGO</td>
-      <td class="val">${esc(e.periodo)}</td>
+      <td class="val">16 al 9 de Junio</td>
       <td class="lbl2" style="width:55px">MES</td>
       <td class="val" style="width:90px;text-align:center">${mesStr}</td>
       <td class="lbl2" style="width:45px">AÑO</td>
@@ -409,8 +409,7 @@ let currentSlipEmployee = null;
 function showSlip(gi) {
   const r = allEmployees[gi] || filtered[gi]; if (!r) return;
   const e = applyContactEdits(r); currentSlipEmployee = e;
-  const tipo = prompt('¿Tipo de cargo?\n1 → ADMINISTRATIVO\n2 → AUXILIAR OPERATIVO');
-  e.cargo = tipo === '1' ? 'ADMINISTRATIVO' : tipo === '2' ? 'AUXILIAR OPERATIVO' : (e.cargo || '');
+  e.cargo = 'AUXILIAR OPERATIVO';
   document.getElementById('slipContent').innerHTML = buildSlipHTML(e);
   document.getElementById('slipOverlay').classList.add('open');
   document.getElementById('btnDownloadPdf').onclick = () => downloadPdf(e);

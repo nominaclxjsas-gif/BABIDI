@@ -33,28 +33,70 @@ function processFile(file) {
           const m = txt.match(/\d+\s+(?:AL|al|-)\s*\d+\s+DE\s+\w+\s+DE\s+\d{4}/i) || txt.match(/\d+\s*[-–]\s*\d+\s+(?:DE\s+)?\w+\s+DEL?\s+\d{4}/i);
           if (m) { periodo = m[0].trim(); break; }
         }
-        let headerRow = -1, cedulaCol = 0, nombreCol = 1, smlvCol = 2;
+        // Detectar fila de encabezado principal (la que tiene CEDULA y NOMBRE)
+        let headerRow = -1, cedulaCol = 0, nombreCol = 1;
         for (let hi = 0; hi < Math.min(8, data.length); hi++) {
           const ru = data[hi].map(c => String(c || '').toUpperCase().trim());
           const ci = ru.findIndex(c => c === 'CEDULA' || c === 'CÉDULA' || c === 'CC' || c === 'C.C.');
           const ni = ru.findIndex(c => c.includes('NOMBRE'));
-          if (ci >= 0 && ni >= 0) {
-            headerRow = hi; cedulaCol = ci; nombreCol = ni;
-            const si = ru.findIndex(c => c === 'SMLV');
-            smlvCol = si >= 0 ? si : ni + 1; break;
-          }
+          if (ci >= 0 && ni >= 0) { headerRow = hi; cedulaCol = ci; nombreCol = ni; break; }
         }
         if (headerRow < 0) return;
-        const ds = headerRow + 3, b = smlvCol + 1, hR = data[headerRow].map(c => String(c || '').toUpperCase().trim());
+
+        // El Excel tiene 3 filas de encabezado (main header + sub-header + CANT/VALOR)
+        // Los datos empiezan en headerRow + 3
+        const ds = headerRow + 3;
+        const hR = data[headerRow].map(c => String(c || '').toUpperCase().trim());
         const find = (...keys) => { for (const k of keys) { const i = hR.findIndex(h => h.includes(k)); if (i >= 0) return i; } return -1; };
-        const cD=find('DEVANGADO','DEVENGADO'),cDP=find('DESCUENTO PREST','PRESTAMOS'),cI=find('INCAPACIDAD'),cAT=find('AUXILIO DE TRASP','AUXILIO TRANSPORT'),cAL=find('MERA LIBERALIDAD','LIBERALIDAD'),cDed=find('DEDUCI','DEDUCCIONES','DEDUCIONES'),cTP=find('TOTAL A PAGAR','TOTAL PAGAR'),cCu=find('CUENTA BANA','CUENTA BANCARIA','CUENTA'),cOb=find('OBSERVACIONES'),cCo=find('CORREO'),cTI=find('TRANSPORTE INTERMU','INTERMUNICIPAL'),cTu=find('TURNOS'),cHo=hR.findIndex((h,i)=>h==='HORAS'&&i!==smlvCol);
+
+        // Columnas fijas verificadas en el Excel real:
+        // Col 0: CEDULA | Col 1: NOMBRE | Col 2: SMLV | Col 3: TURNOS | Col 4: HORAS
+        // Col 5-6:  Turno Dia (CANT/VALOR)      Col 7-8:  Turno Noche (CANT/VALOR)
+        // Col 9-10: Fest Diurno                 Col 11-12: Fest Nocturno
+        // Col 13-14: HE Diurna                  Col 15-16: HE Nocturna
+        // Col 17-18: HE Fest Diurna             Col 19-20: HE Fest Nocturna
+        // Col 21-22: Recargo Nocturno           Col 23-24: Recargo Dom/Fest
+        // Col 25-26: Recargo Noct Fest
+        // Col 27: Aux Transporte | Col 28: Devengado | Col 29: Desc Prestamos
+        // Col 30: Incapacidad | Col 31: Trans Intermunic/Prestamo | Col 32: Otros/Liberalidad
+        // Col 33: Deducciones | Col 34: Total a Pagar | Col 35: Cuenta | Col 36: Obs | Col 37: Correo
+        const cTI = find('TRANSPORTE INTERMU', 'INTERMUNICIPAL');
+        const cAL = find('MERA LIBERALIDAD', 'LIBERALIDAD');
         for (let i = ds; i < data.length; i++) {
-          const row = data[i]; let cr = clean(row[cedulaCol]); const nombre = clean(row[nombreCol]);
+          const row = data[i];
+          let cr = clean(row[cedulaCol]); const nombre = clean(row[nombreCol]);
           if (!cr || !nombre) continue;
           if (nombre.toLowerCase().includes('total') || nombre.toLowerCase().includes('pagar nomina')) continue;
-          const cedula = cr.replace(/^(CD|PPT|PT|ppt|pt|cd)\s*/i,'').trim();
+          const cedula = cr.replace(/^(CD|PPT|PT|ppt|pt|cd)[\s.]*/i, '').trim();
           if (!cedula || isNaN(parseInt(cedula))) continue;
-          allEmployees.push({ciudad,periodo,cedula,nombre,smlv:num(row[smlvCol]),turnos:cTu>=0?num(row[cTu]):num(row[b]),horas:cHo>=0?num(row[cHo]):0,turno_dia_c:num(row[b]),turno_dia_v:num(row[b+1]),turno_noche_c:num(row[b+2]),turno_noche_v:num(row[b+3]),fest_d_c:num(row[b+4]),fest_d_v:num(row[b+5]),fest_n_c:num(row[b+6]),fest_n_v:num(row[b+7]),he_d_c:num(row[b+8]),he_d_v:num(row[b+9]),he_n_c:num(row[b+10]),he_n_v:num(row[b+11]),he_fd_c:num(row[b+12]),he_fd_v:num(row[b+13]),he_fn_c:num(row[b+14]),he_fn_v:num(row[b+15]),rec_n_c:num(row[b+16]),rec_n_v:num(row[b+17]),rec_dom_c:num(row[b+18]),rec_dom_v:num(row[b+19]),rec_nf_c:num(row[b+20]),rec_nf_v:num(row[b+21]),aux_trans:cAT>=0?num(row[cAT]):0,devengado:cD>=0?num(row[cD]):0,desc_prest:cDP>=0?num(row[cDP]):0,incapacidad:cI>=0?num(row[cI]):0,trans_inter:cTI>=0?num(row[cTI]):0,aux_lib:cAL>=0?num(row[cAL]):0,deduc:cDed>=0?num(row[cDed]):0,total_pagar:cTP>=0?num(row[cTP]):0,cuenta:cCu>=0?clean(row[cCu]):'',obs:cOb>=0?clean(row[cOb]):'',correo:cCo>=0?clean(row[cCo]):''});
+          allEmployees.push({
+            ciudad, periodo, cedula, nombre,
+            smlv:          num(row[2]),
+            turnos:        num(row[3]),
+            horas:         num(row[4]),
+            turno_dia_c:   num(row[5]),  turno_dia_v:    num(row[6]),
+            turno_noche_c: num(row[7]),  turno_noche_v:  num(row[8]),
+            fest_d_c:      num(row[9]),  fest_d_v:       num(row[10]),
+            fest_n_c:      num(row[11]), fest_n_v:       num(row[12]),
+            he_d_c:        num(row[13]), he_d_v:         num(row[14]),
+            he_n_c:        num(row[15]), he_n_v:         num(row[16]),
+            he_fd_c:       num(row[17]), he_fd_v:        num(row[18]),
+            he_fn_c:       num(row[19]), he_fn_v:        num(row[20]),
+            rec_n_c:       num(row[21]), rec_n_v:        num(row[22]),
+            rec_dom_c:     num(row[23]), rec_dom_v:      num(row[24]),
+            rec_nf_c:      num(row[25]), rec_nf_v:       num(row[26]),
+            aux_trans:     num(row[27]),
+            devengado:     num(row[28]),
+            desc_prest:    num(row[29]),
+            incapacidad:   num(row[30]),
+            trans_inter:   cTI >= 0 ? num(row[cTI]) : num(row[31]),
+            aux_lib:       cAL >= 0 ? num(row[cAL]) : num(row[32]),
+            deduc:         num(row[33]),
+            total_pagar:   num(row[34]),
+            cuenta:        clean(row[35]) || '',
+            obs:           clean(row[36]) || '',
+            correo:        clean(row[37]) || ''
+          });
         }
       });
       showLoad('Finalizando...', 85);
@@ -90,27 +132,51 @@ function updateDashKPIs() {
 function buildPanel() {
   const cities = [...new Set(allEmployees.map(e => e.ciudad))].sort();
   const cont = document.getElementById('empleadosPanel'); if (!cont) return;
-  cont.innerHTML = `
-    <div class="sheet-tabs-wrap" id="sheetTabs">
-      <button class="sheet-tab active" onclick="filterByCity('');document.querySelectorAll('.sheet-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active')">Todos</button>
-      ${cities.map(c=>`<button class="sheet-tab" onclick="filterByCity('${c.replace(/'/g,"\\'")}');document.querySelectorAll('.sheet-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active')">${esc(c)}</button>`).join('')}
-    </div>
-    <div class="panel-toolbar">
-      <input id="searchInput" class="filt-input" placeholder="🔍 Buscar empleado, cédula...">
-      <select id="cityFilter" class="filt-select"><option value="">Todas las ciudades</option>${cities.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('')}</select>
-      <button class="tb-btn" onclick="openCityReport()">📊 Resumen</button>
-      <button class="tb-btn red" onclick="exportFiltered()">📥 Exportar</button>
-      <div class="pag-ctrl">Filas:<select id="rowsPer"><option value="50">50</option><option value="100" selected>100</option><option value="250">250</option><option value="500">500</option></select><button id="btnPrev">◀</button><span class="pag-info" id="pagInfo">Pág 1</span><button id="btnNext">▶</button></div>
-    </div>
-    <div class="summary-chips" id="summaryChips"></div>
-    <div class="tbl-wrap" style="max-height:calc(100vh - 340px)">
-      <table class="data-tbl" id="mainTbl"><thead id="tblHead"><tr></tr></thead><tbody id="tblBody"><tr><td colspan="9" style="padding:48px;text-align:center;color:var(--text3)">Cargando...</td></tr></tbody></table>
-    </div>`;
-  document.getElementById('searchInput').addEventListener('input', () => { page=1; applyFilters(); });
-  document.getElementById('cityFilter').addEventListener('change', () => { page=1; applyFilters(); });
-  document.getElementById('rowsPer').addEventListener('change', () => { perPage=parseInt(document.getElementById('rowsPer').value); page=1; applyFilters(); });
-  document.getElementById('btnPrev').addEventListener('click', () => { if(page>1){page--;renderRows();} });
-  document.getElementById('btnNext').addEventListener('click', () => { const t=Math.ceil(filtered.length/perPage); if(page<t){page++;renderRows();} });
+
+  // Reconstruir solo las partes que cambian con cada carga (tabs y opciones de ciudad)
+  // Si el panel ya existe, solo actualizar tabs y select de ciudades sin recrear los inputs
+  const panelExists = !!document.getElementById('searchInput');
+
+  if (!panelExists) {
+    cont.innerHTML = `
+      <div class="sheet-tabs-wrap" id="sheetTabs"></div>
+      <div class="panel-toolbar">
+        <input id="searchInput" class="filt-input" placeholder="🔍 Buscar empleado, cédula...">
+        <select id="cityFilter" class="filt-select"><option value="">Todas las ciudades</option></select>
+        <button class="tb-btn" onclick="openCityReport()">📊 Resumen</button>
+        <button class="tb-btn red" onclick="exportFiltered()">📥 Exportar</button>
+        <div class="pag-ctrl">Filas:<select id="rowsPer"><option value="50">50</option><option value="100" selected>100</option><option value="250">250</option><option value="500">500</option></select><button id="btnPrev">◀</button><span class="pag-info" id="pagInfo">Pág 1</span><button id="btnNext">▶</button></div>
+      </div>
+      <div class="summary-chips" id="summaryChips"></div>
+      <div class="tbl-wrap" style="max-height:calc(100vh - 340px)">
+        <table class="data-tbl" id="mainTbl"><thead id="tblHead"><tr></tr></thead><tbody id="tblBody"><tr><td colspan="9" style="padding:48px;text-align:center;color:var(--text3)">Cargando...</td></tr></tbody></table>
+      </div>`;
+
+    // Registrar listeners UNA SOLA VEZ
+    document.getElementById('searchInput').addEventListener('input', () => { page=1; applyFilters(); });
+    document.getElementById('cityFilter').addEventListener('change', () => { page=1; applyFilters(); });
+    document.getElementById('rowsPer').addEventListener('change', () => { perPage=parseInt(document.getElementById('rowsPer').value); page=1; applyFilters(); });
+    document.getElementById('btnPrev').addEventListener('click', () => { if(page>1){page--;renderRows();} });
+    document.getElementById('btnNext').addEventListener('click', () => { const t=Math.ceil(filtered.length/perPage); if(page<t){page++;renderRows();} });
+  }
+
+  // Actualizar tabs de ciudades
+  const sheetTabs = document.getElementById('sheetTabs');
+  if (sheetTabs) {
+    sheetTabs.innerHTML = `<button class="sheet-tab active" onclick="filterByCity('');document.querySelectorAll('.sheet-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active')">Todos</button>` +
+      cities.map(c=>`<button class="sheet-tab" onclick="filterByCity('${c.replace(/'/g,"\\'")}');document.querySelectorAll('.sheet-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active')">${esc(c)}</button>`).join('');
+  }
+
+  // Actualizar opciones del select de ciudad
+  const cf = document.getElementById('cityFilter');
+  if (cf) {
+    cf.innerHTML = `<option value="">Todas las ciudades</option>` + cities.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  }
+
+  // Limpiar búsqueda al cargar nuevo archivo
+  const si = document.getElementById('searchInput');
+  if (si) si.value = '';
+
   page = 1; applyFilters();
 }
 

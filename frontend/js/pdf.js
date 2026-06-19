@@ -283,7 +283,7 @@ ${SLIP_CSS}
     <tr>
       <td class="s-hdr-logo" style="width:120px">${logoSrc ? `<img src="${logoSrc}" alt="CL">` : ''}</td>
       <td class="s-hdr-title">
-        <div class="t1">Comprobante de Pago &mdash; 16 al 9 de Junio</div>
+        <div class="t1">Comprobante de Pago &mdash; ${selectedPeriod === 1 ? '10 al 24' : '25 al 9'} de ${mesStr}</div>
         <div class="t2">¡Tu esfuerzo impulsa nuestra operación. Gracias por este corte de nómina!</div>
       </td>
       <td class="s-hdr-logo" style="width:120px;border-left:1px solid #1e3060;border-right:none">${logoSrc ? `<img src="${logoSrc}" alt="CL">` : ''}</td>
@@ -292,7 +292,7 @@ ${SLIP_CSS}
   <table style="border:${B}">
     <tr>
       <td class="lbl" style="width:130px">PERIODO DE PAGO</td>
-      <td class="val">16 al 9 de Junio</td>
+      <td class="val">${selectedPeriod === 1 ? '10 al 24' : '25 al 9'} de ${mesStr}</td>
       <td class="lbl2" style="width:55px">MES</td>
       <td class="val" style="width:90px;text-align:center">${mesStr}</td>
       <td class="lbl2" style="width:45px">AÑO</td>

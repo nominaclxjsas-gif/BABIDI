@@ -234,8 +234,28 @@
           <div class="desprendibles-toolbar">
             <input class="filt-input" id="despSearch" placeholder="🔍 Buscar empleado..." style="max-width:220px" oninput="renderDesprendibles()">
             <button class="btn-generar-pdf" onclick="downloadAllPdfs()" style="color:#ffffff">↓ Generar Todos los PDF</button>
-          </div>
+</div>
         </div>
+
+        <!-- SELECTOR DE PERÍODO -->
+        <div id="periodSelector" style="display:none;gap:10px;margin-bottom:16px;justify-content:center;align-items:center">
+          <div style="font-size:12px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Período de Pago:</div>
+          <button class="period-btn" data-period="1" onclick="setPeriod(1)" style="padding:10px 18px;border-radius:6px;border:2px solid rgba(245,197,24,.3);background:var(--bg2);color:var(--text1);cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s;opacity:0.6">📅 10 al 24</button>
+          <button class="period-btn" data-period="2" onclick="setPeriod(2)" style="padding:10px 18px;border-radius:6px;border:2px solid var(--border);background:var(--bg2);color:var(--text1);cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s;opacity:0.6">📅 25 al 9</button>
+        </div>
+
+        <style>
+.period-btn.active {
+  opacity: 1 !important;
+  border-color: rgba(245,197,24,.8) !important;
+  background: rgba(245,197,24,.1) !important;
+  box-shadow: 0 0 12px rgba(245,197,24,.2);
+}
+.period-btn:hover {
+  opacity: 0.9 !important;
+}
+</style>
+
         <div id="desprendiblesPanel">
           <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:var(--text3);gap:10px">
             <div style="font-size:36px">⏳</div>

@@ -13,6 +13,18 @@ function setupDropZone(dzId, inputId) {
 setupDropZone('dropZone', 'fileInput');
 setupDropZone('dropZone2', 'fileInput2');
 
+// ══════════════════════════════════════════════  ← AGREGAR AQUÍ
+//  SELECTOR DE PERÍODO
+// ══════════════════════════════════════════════
+let selectedPeriod = 1;
+
+function setPeriod(period) {
+  selectedPeriod = period;
+  document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`.period-btn[data-period="${period}"]`).classList.add('active');
+  renderDesprendibles();
+}
+
 function processFile(file) {
   showLoad('Leyendo archivo...', 20);
   const reader = new FileReader();
@@ -178,6 +190,15 @@ function buildPanel() {
   if (si) si.value = '';
 
   page = 1; applyFilters();
+  
+    // Mostrar selector de período
+  const periodSelector = document.getElementById('periodSelector');
+  if (periodSelector) {
+    periodSelector.style.display = 'flex';
+    selectedPeriod = 1;
+    document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector('.period-btn[data-period="1"]').classList.add('active');
+  }
 }
 
 function filterByCity(city) { const cf=document.getElementById('cityFilter'); if(cf)cf.value=city; page=1; applyFilters(); }

@@ -209,8 +209,13 @@ function buildSlipHTML(emp) {
   const diasTrab = e.dias_trabajados || e.dias || 0;
   if (diasTrab > 0) ingRows.push({ concepto:'SALARIO BÁSICO', cant:diasTrab+' días', vlrUnit:vlrDia, total:Math.round(vlrDia*diasTrab) });
 
-  const turnosDiaC = e.turnos || 0;
-  if (turnosDiaC > 0) ingRows.push({ concepto:'TURNO ORDINARIO DIURNO', cant:turnosDiaC, vlrUnit:vlrDia, total:Math.round(vlrDia*turnosDiaC) });
+  if (e.turno_dia_c > 0) ingRows.push({ concepto:'TURNO ORDINARIO', cant:e.turno_dia_c, vlrUnit:e.turno_dia_v > 0 ? Math.round(e.turno_dia_v / e.turno_dia_c) : 0, total:e.turno_dia_v });
+
+    const festDiaC = e.fest_d_c || 0;
+  if (festDiaC > 0) ingRows.push({ concepto:'TURNO FESTIVO', cant:festDiaC, vlrUnit:TARIFA_2026.f, total:Math.round(TARIFA_2026.f*festDiaC) });
+
+  const festNocC = e.fest_n_c || 0;
+  if (festNocC > 0) ingRows.push({ concepto:'TURNO FESTIVO', cant:festNocC, vlrUnit:TARIFA_2026.hf, total:Math.round(TARIFA_2026.hf*festNocC) });
 
   const hedc = e.he_d_c || 0;
   if (hedc > 0) ingRows.push({ concepto:'HORA EXTRA DIURNA', cant:hedc, vlrUnit:TARIFA_2026.hed, total:Math.round(TARIFA_2026.hed*hedc) });
@@ -224,29 +229,24 @@ function buildSlipHTML(emp) {
   const hefnc = e.he_fn_c || 0;
   if (hefnc > 0) ingRows.push({ concepto:'HORA EXTRA NOCTURNA FESTIVA', cant:hefnc, vlrUnit:TARIFA_2026.henf, total:Math.round(TARIFA_2026.henf*hefnc) });
 
-  const festDiaC = e.fest_d_c || 0;
-  if (festDiaC > 0) ingRows.push({ concepto:'FESTIVO DIURNO', cant:festDiaC, vlrUnit:TARIFA_2026.f, total:Math.round(TARIFA_2026.f*festDiaC) });
-
-  const festNocC = e.fest_n_c || 0;
-  if (festNocC > 0) ingRows.push({ concepto:'FESTIVO NOCTURNO', cant:festNocC, vlrUnit:TARIFA_2026.hf, total:Math.round(TARIFA_2026.hf*festNocC) });
-
   const recnc = e.rec_n_c || 0;
   if (recnc > 0) ingRows.push({ concepto:'RECARGO NOCTURNO', cant:recnc, vlrUnit:TARIFA_2026.rn, total:Math.round(TARIFA_2026.rn*recnc) });
-
-  const recnfc = (e.rec_dom_c || 0) + (e.rec_nf_c || 0);
-  if (recnfc > 0) ingRows.push({ concepto:'RECARGO NOCTURNO FESTIVO', cant:recnfc, vlrUnit:TARIFA_2026.rnf, total:Math.round(TARIFA_2026.rnf*recnfc) });
+  
+  if (e.rec_nf_c  > 0) ingRows.push({ concepto:'RECARGO NOCTURNO FESTIVO',  cant:e.rec_nf_c,  vlrUnit:TARIFA_2026.rnf, total:e.rec_nf_v });
 
   const diasAux = e.dias_aux_trans || 0;
   if (diasAux > 0) {
     ingRows.push({ concepto:'AUXILIO DE TRANSPORTE', cant:diasAux+' días', vlrUnit:TARIFA_2026.at_dia, total:Math.round(TARIFA_2026.at_dia*diasAux) });
   } else if (e.aux_trans > 0) {
-    ingRows.push({ concepto:'AUXILIO DE TRANSPORTE', cant:'—', vlrUnit:TARIFA_2026.at_dia, total:e.aux_trans });
+    ingRows.push({ concepto:'AUXILIO DE TRANSPORTE', cant:e.turnos, vlrUnit:TARIFA_2026.at_dia, total:e.aux_trans });
   }
 
   if (e.aux_lib     > 0) ingRows.push({ concepto:'AUXILIO LIBERALIDAD',       cant:'—', vlrUnit:'—', total:e.aux_lib });
   if (e.trans_inter > 0) ingRows.push({ concepto:'TRANSPORTE INTERMUNICIPAL', cant:'—', vlrUnit:'—', total:e.trans_inter });
   if (e.incapacidad > 0) ingRows.push({ concepto:'INCAPACIDAD EPS',           cant:'—', vlrUnit:'—', total:e.incapacidad });
 
+  const totalTurnos = e.turnos || 0;
+ 
   const totalIngresos = ingRows.reduce((s, r) => s + (r.total || 0), 0);
 
   const ingTR = ingRows.map((r, i) => `
@@ -319,7 +319,12 @@ ${SLIP_CSS}
       <td class="val" colspan="3">${esc(tipoNomina)}</td>
     </tr>
   </table>
-  <table style="border:${B};border-top:none">
+    <table style="border:${B};border-top:none">
+    <tr>
+      <td colspan="2" style="background:#f0f4f8;padding:14px 15px;font-weight:700;color:#0d1b3e;font-size:13px;border:1px solid #cfd4da;text-align:center;letter-spacing:0.5px">
+        📋 TOTAL DE TURNOS : <span style="color:#d4a017;font-size:16px;font-weight:900">${totalTurnos}</span>
+      </td>
+    </tr>
     <tr>
       <td class="sec-hdr" style="width:58%">INGRESOS</td>
       <td class="sec-hdr" style="width:42%;border-left:1px solid #cfd4da">DEDUCCIONES</td>

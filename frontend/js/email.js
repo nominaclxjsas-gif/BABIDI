@@ -65,22 +65,20 @@ function getFechasPago(emp) {
 // ──────────────────────────────────────────────
 function buildBrevoHtmlBody(emp) {
   const cfg = getBrevoConfig();
-  let body = cfg.body || 'Estimado(a) <strong>{{nombre}}</strong>,<br><br>Adjunto su desprendible del período <strong>{{periodo}}</strong>.<br><br>Atentamente,<br><strong>BABIDI LOGÍSTICA</strong>';
+  let body = cfg.body || 'Estimado(a) <strong>{{nombre}}</strong>,<br><br>Adjunto encontrará su desprendible de nómina del período actual.<br><br>Atentamente,<br><strong>BABIDI LOGÍSTICA</strong>';
   body = body.replace(/\{\{nombre\}\}/g, esc(emp.nombre))
-             .replace(/\{\{periodo\}\}/g, esc(emp.periodo || ''))
              .replace(/\{\{cedula\}\}/g, esc(emp.cedula))
              .replace(/\{\{ciudad\}\}/g, esc(emp.ciudad));
   const today = new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'});
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f4f4f8;font-family:Arial,sans-serif">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f8;padding:32px 16px"><tr><td align="center">
 <table width="580" cellpadding="0" cellspacing="0" style="max-width:580px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.1)">
-<tr><td style="background:#0d0f1a;padding:20px 28px;position:relative"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:#f5c518"></div><div style="font-size:22px;font-weight:900;color:#fff;font-family:Arial,sans-serif">BABIDI<span style="color:#f5c518">NÓMINA</span></div><div style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:2px;text-transform:uppercase;margin-top:4px">Comprobante de Nómina</div></td></tr>
+<tr><td style="background:#0a1628;padding:20px 28px;position:relative"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:#c9a227"></div><div style="font-size:22px;font-weight:900;color:#fff;font-family:Arial,sans-serif">BABIDI<span style="color:#c9a227">NÓMINA</span></div><div style="font-size:10px;color:rgba(255,255,255,.45);letter-spacing:2px;text-transform:uppercase;margin-top:4px">Comprobante de Nómina</div></td></tr>
 <tr><td style="padding:24px 28px;font-size:14px;color:#555;line-height:1.8">${body}</td></tr>
-<tr><td style="background:#f7f8fc;border-top:1px solid #e2e4ec;padding:14px 28px;font-size:11px;color:#aaa">Este es un mensaje automático generado por BABIDI NÓMINA · ${today}</td></tr>
-<tr><td style="background:#0d0f1a;padding:14px 28px"><div style="font-size:10px;color:rgba(255,255,255,.35)">C.C. ${esc(emp.cedula)} · ${esc(emp.nombre)}</div></td></tr>
+<tr><td style="background:#f3f4f8;border-top:1px solid #e2e4ec;padding:14px 28px;font-size:11px;color:#aaa">Este es un mensaje automático generado por BABIDI NÓMINA · ${today}</td></tr>
+<tr><td style="background:#0a1628;padding:14px 28px"><div style="font-size:10px;color:rgba(255,255,255,.35)">C.C. ${esc(emp.cedula)} · ${esc(emp.nombre)}</div></td></tr>
 </table></td></tr></table></body></html>`;
 }
-
 // ──────────────────────────────────────────────
 //  ENVÍO VÍA BREVO API
 // ──────────────────────────────────────────────
@@ -116,6 +114,8 @@ async function sendSingleEmail(emp) {
   const btn = document.getElementById('btnSendSingle');
   btn.textContent = '⏳...'; btn.disabled = true;
   try {
+    emp.cargo = 'AUXILIAR OPERATIVO';
+    emp.periodo = emp.periodo || (typeof currentPeriodLabel !== 'undefined' ? currentPeriodLabel : '');
     const pb64 = await generateSlipPdfBase64(emp);
     await sendViaBrevoApi(emp, pb64);
     showToast(`✅ Enviado a ${emp.correo}`,'success');
@@ -165,6 +165,8 @@ async function startSendAll() {
     const emp = targets[i];
     label.textContent=`Generando PDF… ${i+1} de ${targets.length}`;
     try {
+      emp.cargo = 'AUXILIAR OPERATIVO';
+      emp.periodo = emp.periodo || (typeof currentPeriodLabel !== 'undefined' ? currentPeriodLabel : '');
       const pb64 = await generateSlipPdfBase64(emp);
       label.textContent=`Enviando a ${emp.nombre}… (${i+1}/${targets.length})`;
       await sendViaBrevoApi(emp, pb64);

@@ -87,7 +87,6 @@ function processFile(file) {
             turnos:        num(row[3]),
             horas:         num(row[4]),
             turno_dia_c:   num(row[5]),  turno_dia_v:    num(row[6]),
-            turno_noche_c: num(row[7]),  turno_noche_v:  num(row[8]),
             fest_d_c:      num(row[9]),  fest_d_v:       num(row[10]),
             fest_n_c:      num(row[11]), fest_n_v:       num(row[12]),
             he_d_c:        num(row[13]), he_d_v:         num(row[14]),

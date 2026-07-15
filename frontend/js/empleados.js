@@ -17,11 +17,19 @@ setupDropZone('dropZone2', 'fileInput2');
 //  SELECTOR DE PERÍODO
 // ══════════════════════════════════════════════
 let selectedPeriod = 1;
+let selectedMonth = '';
+
+const MESES_NOMBRE = {1:'ENERO',2:'FEBRERO',3:'MARZO',4:'ABRIL',5:'MAYO',6:'JUNIO',7:'JULIO',8:'AGOSTO',9:'SEPTIEMBRE',10:'OCTUBRE',11:'NOVIEMBRE',12:'DICIEMBRE'};
 
 function setPeriod(period) {
   selectedPeriod = period;
   document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
   document.querySelector(`.period-btn[data-period="${period}"]`).classList.add('active');
+  renderDesprendibles();
+}
+
+function setMonth(value) {
+  selectedMonth = value;
   renderDesprendibles();
 }
 
@@ -197,6 +205,9 @@ function buildPanel() {
     selectedPeriod = 1;
     document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelector('.period-btn[data-period="1"]').classList.add('active');
+    selectedMonth = '';
+    const ms = document.getElementById('monthSelector');
+    if (ms) ms.value = '';
   }
 }
 

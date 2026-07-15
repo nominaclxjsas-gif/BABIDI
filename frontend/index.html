@@ -237,12 +237,44 @@
 </div>
         </div>
 
-        <!-- SELECTOR DE PERÍODO -->
-        <div id="periodSelector" style="display:none;gap:10px;margin-bottom:16px;justify-content:center;align-items:center">
-          <div style="font-size:12px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Período de Pago:</div>
-          <button class="period-btn" data-period="1" onclick="setPeriod(1)" style="padding:10px 18px;border-radius:6px;border:2px solid rgba(245,197,24,.3);background:var(--bg2);color:var(--text1);cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s;opacity:0.6">📅 10 al 24</button>
-          <button class="period-btn" data-period="2" onclick="setPeriod(2)" style="padding:10px 18px;border-radius:6px;border:2px solid var(--border);background:var(--bg2);color:var(--text1);cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s;opacity:0.6">📅 25 al 9</button>
-        </div>
+    <!-- SELECTOR DE PERÍODO -->
+    <div id="periodSelector" style="display:none;gap:10px;margin-bottom:16px;justify-content:center;align-items:center;flex-wrap:wrap">
+
+    <div style="font-size:12px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.5px">
+    Período de Pago:
+     </div>
+
+  <button class="period-btn" data-period="1" onclick="setPeriod(1)"
+    style="padding:10px 18px;border-radius:6px;border:2px solid rgba(245,197,24,.3);background:var(--bg2);color:var(--text1);cursor:pointer;font-size:12px;font-weight:600;transition:all .2s;opacity:.6">
+    📅 10 al 24
+  </button>
+
+  <button class="period-btn" data-period="2" onclick="setPeriod(2)"
+    style="padding:10px 18px;border-radius:6px;border:2px solid var(--border);background:var(--bg2);color:var(--text1);cursor:pointer;font-size:12px;font-weight:600;transition:all .2s;opacity:.6">
+    📅 25 al 9
+  </button>
+
+  <!-- Selector de Mes -->
+  <select id="monthSelector"
+    onchange="setMonth(this.value)"
+    style="padding:10px 15px;border-radius:6px;border:2px solid var(--border);background:var(--bg2);color:var(--text1);font-size:12px;font-weight:600;cursor:pointer;min-width:160px;">
+
+    <option value="">📆 Seleccionar Mes</option>
+    <option value="1">Enero</option>
+    <option value="2">Febrero</option>
+    <option value="3">Marzo</option>
+    <option value="4">Abril</option>
+    <option value="5">Mayo</option>
+    <option value="6">Junio</option>
+    <option value="7">Julio</option>
+    <option value="8">Agosto</option>
+    <option value="9">Septiembre</option>
+    <option value="10">Octubre</option>
+    <option value="11">Noviembre</option>
+    <option value="12">Diciembre</option>
+  </select>
+
+</div>
 
         <style>
 .period-btn.active {

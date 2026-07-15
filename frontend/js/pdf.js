@@ -90,7 +90,10 @@ function _safeFileName(nombre) {
 // ──────────────────────────────────────────────
 function renderDesprendibles() {
   const q = (document.getElementById('despSearch')?.value || '').toLowerCase();
-  const emps = allEmployees.filter(e => !q || e.nombre.toLowerCase().includes(q) || e.cedula.includes(q));
+  const emps = allEmployees.filter(e => {
+    if (q && !e.nombre.toLowerCase().includes(q) && !e.cedula.includes(q)) return false;
+    return true;
+  });
   const el = document.getElementById('desprendiblesPanel'); if (!el) return;
   if (!emps.length) {
     el.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:var(--text3);gap:10px"><div style="font-size:36px">📄</div><div style="font-family:var(--mono);font-size:13px">Sin resultados</div></div>'; return;
@@ -179,7 +182,7 @@ const SLIP_CSS = `
 `;
 
 // ──────────────────────────────────────────────
-//  CONSTRUCCIÓN DEL HTML DEL DESPRENDIBLE
+//  RUCCIÓN DEL HTML DEL DESPRENDIBLE
 // ──────────────────────────────────────────────
 function buildSlipHTML(emp) {
   const e = applyContactEdits(emp);
@@ -194,7 +197,7 @@ function buildSlipHTML(emp) {
   const hoy        = new Date();
   const today      = hoy.toLocaleDateString('es-CO');
   const meses      = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
-  const mesStr     = meses[hoy.getMonth()];
+  const mesStr     = selectedMonth ? meses[parseInt(selectedMonth, 10) - 1] : meses[hoy.getMonth()];
   const anioStr    = hoy.getFullYear();
   const fechaPago  = today;
   const tipoNomina = e.tipo_nomina || 'PAGO QUINCENAL';

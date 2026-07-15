@@ -16,7 +16,11 @@ function navTo(viewId, navEl) {
   if (viewId === 'historialView') renderHistorialView();
   if (viewId === 'usuariosView') renderUsersGrid();
   if (viewId === 'empleadosView' && allEmployees.length) buildPanel();
-  if (viewId === 'desprendiblesView' && allEmployees.length) renderDesprendibles();
+  if (viewId === 'desprendiblesView' && allEmployees.length) {
+    const periodSelector = document.getElementById('periodSelector');
+    if (periodSelector) periodSelector.style.display = 'flex';
+    renderDesprendibles();
+  }
   if (viewId === 'envioView') loadBrevoConfigToUI();
   loadHistory();
 }

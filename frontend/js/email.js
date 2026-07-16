@@ -4,6 +4,44 @@
 
 const BREVO_CFG_KEY = 'babidi_brevo_cfg_v1';
 
+// ──────────────────────────────────────────────
+//  MES SELECCIONADO PARA EL ENVÍO MASIVO
+// ──────────────────────────────────────────────
+let envioSelectedMonth = '';
+const MESES_ENVIO = {1:'Enero',2:'Febrero',3:'Marzo',4:'Abril',5:'Mayo',6:'Junio',7:'Julio',8:'Agosto',9:'Septiembre',10:'Octubre',11:'Noviembre',12:'Diciembre'};
+
+function setEnvioMonth(value) {
+  envioSelectedMonth = value;
+}
+
+// El desprendible en PDF (pdf.js) usa la variable global `selectedMonth`
+// (la misma del selector en "Cargar Nómina") para escribir el nombre del
+// mes dentro del documento. Antes de generar cada PDF de envío masivo,
+// la sincronizamos con el mes elegido aquí, y la restauramos después
+// para no afectar la pestaña de Cargar Nómina / Desprendibles.
+function applyEnvioMonthToPdf() {
+  const prev = (typeof selectedMonth !== 'undefined') ? selectedMonth : '';
+  if (envioSelectedMonth && typeof selectedMonth !== 'undefined') {
+    selectedMonth = envioSelectedMonth;
+  }
+  return prev;
+}
+function restoreMonthAfterPdf(prev) {
+  if (typeof selectedMonth !== 'undefined') {
+    selectedMonth = prev;
+  }
+}
+
+// Devuelve la etiqueta de período a usar en los correos.
+// Si el usuario eligió un mes en el selector de Envío Masivo, ese mes
+// tiene prioridad sobre el período que traiga el Excel cargado.
+function resolveEnvioPeriodo(emp) {
+  if (envioSelectedMonth) {
+    return MESES_ENVIO[parseInt(envioSelectedMonth, 10)] + ' ' + new Date().getFullYear();
+  }
+  return emp.periodo || (typeof currentPeriodLabel !== 'undefined' ? currentPeriodLabel : '');
+}
+
 function getBrevoConfig() {
   try { return JSON.parse(localStorage.getItem(BREVO_CFG_KEY) || '{}'); } catch { return {}; }
 }
@@ -68,7 +106,8 @@ function buildBrevoHtmlBody(emp) {
   let body = cfg.body || 'Estimado(a) <strong>{{nombre}}</strong>,<br><br>Adjunto encontrará su desprendible de nómina del período actual.<br><br>Atentamente,<br><strong>BABIDI LOGÍSTICA</strong>';
   body = body.replace(/\{\{nombre\}\}/g, esc(emp.nombre))
              .replace(/\{\{cedula\}\}/g, esc(emp.cedula))
-             .replace(/\{\{ciudad\}\}/g, esc(emp.ciudad));
+             .replace(/\{\{ciudad\}\}/g, esc(emp.ciudad))
+             .replace(/\{\{periodo\}\}/g, esc(emp.periodo || ''));
   const today = new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'});
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f4f4f8;font-family:Arial,sans-serif">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f8;padding:32px 16px"><tr><td align="center">
@@ -113,15 +152,17 @@ async function sendViaBrevoApi(emp, pdfBase64) {
 async function sendSingleEmail(emp) {
   const btn = document.getElementById('btnSendSingle');
   btn.textContent = '⏳...'; btn.disabled = true;
+  const prevMonth = applyEnvioMonthToPdf();
   try {
     emp.cargo = 'AUXILIAR OPERATIVO';
-    emp.periodo = emp.periodo || (typeof currentPeriodLabel !== 'undefined' ? currentPeriodLabel : '');
+    emp.periodo = resolveEnvioPeriodo(emp);
     const pb64 = await generateSlipPdfBase64(emp);
     await sendViaBrevoApi(emp, pb64);
     showToast(`✅ Enviado a ${emp.correo}`,'success');
     btn.textContent = '✓ Enviado';
     setTimeout(() => { btn.textContent='✉️ Enviar'; btn.disabled=false; }, 3000);
   } catch(err) { showToast('Error: '+err.message,'error'); btn.textContent='✉️ Enviar'; btn.disabled=false; }
+  finally { restoreMonthAfterPdf(prevMonth); }
 }
 
 // ──────────────────────────────────────────────
@@ -136,6 +177,12 @@ function openEmailModal() {
   document.getElementById('statConCorreo').textContent = targets.length || '—';
   document.getElementById('statSinCorreo').textContent = (allEmployees.length - targets.length) || '—';
   document.getElementById('statRemitente').textContent = cfg.senderEmail || '⚠️ Sin configurar';
+  const statMes = document.getElementById('statMesEnvio');
+  if (statMes) {
+    statMes.textContent = envioSelectedMonth
+      ? (MESES_ENVIO[parseInt(envioSelectedMonth, 10)] + ' ' + new Date().getFullYear())
+      : 'Período del Excel cargado';
+  }
   document.getElementById('emailProgressWrap').classList.remove('show');
   document.getElementById('emailLog').innerHTML = '';
   document.getElementById('btnStartSend').textContent = '🚀 Enviar todos';
@@ -161,12 +208,13 @@ async function startSendAll() {
   wrap.classList.add('show'); log.innerHTML=''; btn.disabled=true; btn.textContent='Enviando...';
   let ok=0, fail=0;
   function al(cls, msg) { const l=document.createElement('div'); l.className=cls; l.textContent=msg; log.appendChild(l); log.scrollTop=log.scrollHeight; }
+  const prevMonth = applyEnvioMonthToPdf();
   for (let i=0; i<targets.length; i++) {
     const emp = targets[i];
     label.textContent=`Generando PDF… ${i+1} de ${targets.length}`;
     try {
       emp.cargo = 'AUXILIAR OPERATIVO';
-      emp.periodo = emp.periodo || (typeof currentPeriodLabel !== 'undefined' ? currentPeriodLabel : '');
+      emp.periodo = resolveEnvioPeriodo(emp);
       const pb64 = await generateSlipPdfBase64(emp);
       label.textContent=`Enviando a ${emp.nombre}… (${i+1}/${targets.length})`;
       await sendViaBrevoApi(emp, pb64);
@@ -176,6 +224,7 @@ async function startSendAll() {
     fill.style.width=p+'%'; pct.textContent=p+'%';
     await new Promise(r => setTimeout(r, 400));
   }
+  restoreMonthAfterPdf(prevMonth);
   sendingInProgress=false; fill.style.width='100%';
   label.textContent=`✅ ${ok} enviados correctamente · ❌ ${fail} fallidos`;
   pct.textContent='100%'; btn.textContent=`✓ ${ok} enviados`; btn.disabled=false;

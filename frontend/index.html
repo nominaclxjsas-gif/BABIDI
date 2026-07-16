@@ -303,6 +303,30 @@
           <div class="page-sub">Envía desprendibles PDF via <strong style="color:var(--blue)">Brevo API</strong> — sin servidor requerido</div>
         </div>
 
+        <!-- ══ SELECTOR DE MES PARA ENVÍO ══ -->
+        <div style="display:flex;gap:10px;margin-bottom:16px;justify-content:center;align-items:center;flex-wrap:wrap">
+          <div style="font-size:12px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.5px">
+            Mes a enviar:
+          </div>
+          <select id="envioMonthSelector"
+            onchange="setEnvioMonth(this.value)"
+            style="padding:10px 15px;border-radius:6px;border:2px solid var(--border);background:var(--bg2);color:var(--text1);font-size:12px;font-weight:600;cursor:pointer;min-width:220px;">
+            <option value="">📆 Usar período del Excel</option>
+            <option value="1">Enero</option>
+            <option value="2">Febrero</option>
+            <option value="3">Marzo</option>
+            <option value="4">Abril</option>
+            <option value="5">Mayo</option>
+            <option value="6">Junio</option>
+            <option value="7">Julio</option>
+            <option value="8">Agosto</option>
+            <option value="9">Septiembre</option>
+            <option value="10">Octubre</option>
+            <option value="11">Noviembre</option>
+            <option value="12">Diciembre</option>
+          </select>
+        </div>
+
         <!-- ══ CONFIGURACIÓN BREVO ══ -->
         <div class="smtp-card">
           <h3>🔑 Configuración Brevo API</h3>
@@ -362,9 +386,12 @@
 
       <!-- HISTORIAL -->
       <div id="historialView" class="view">
-        <div class="page-header">
-          <div class="page-title">Historial de Archivos</div>
-          <div class="page-sub">Archivos Excel cargados anteriormente</div>
+        <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+          <div>
+            <div class="page-title">Historial de Archivos</div>
+            <div class="page-sub">Archivos Excel cargados anteriormente</div>
+          </div>
+          <button class="hist-clear-all-btn" onclick="clearAllHistory()">🗑️ Borrar todo el historial</button>
         </div>
         <div id="historialBody">
           <div class="hist-view-empty">
@@ -454,6 +481,7 @@
         <div class="stat"><span>Con correo registrado</span><strong id="statConCorreo" style="color:var(--green)">—</strong></div>
         <div class="stat"><span>Sin correo (se omitirán)</span><strong id="statSinCorreo" style="color:var(--gold)">—</strong></div>
         <div class="stat"><span>Remitente configurado</span><strong id="statRemitente" style="color:var(--blue)">—</strong></div>
+        <div class="stat"><span>Mes a enviar</span><strong id="statMesEnvio" style="color:var(--gold)">—</strong></div>
       </div>
       <div class="email-progress-wrap" id="emailProgressWrap">
         <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text3)">

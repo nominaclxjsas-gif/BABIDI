@@ -33,13 +33,9 @@ function setMonth(value) {
   renderDesprendibles();
 }
 
-function processFile(file) {
-  showLoad('Leyendo archivo...', 20);
-  const reader = new FileReader();
-  reader.onload = evt => {
-    try {
+function parseExcelBuffer(buffer) {
       showLoad('Analizando...', 40);
-      const wb = XLSX.read(evt.target.result, {type:'array', cellDates:false, raw:true});
+      const wb = XLSX.read(buffer, {type:'array', cellDates:false, raw:true});
       showLoad('Procesando hojas...', 60);
       allEmployees = [];
       const CITY_MAP = {'BOGOTA':'BOGOTÁ','FUNZA':'FUNZA','PASTO':'PASTO','VILLAVICENCIO':'VILLAVICENCIO','BUCARAMANGA PREST':'BUCARAMANGA','PEREIRA ':'PEREIRA','PEREIRA':'PEREIRA','CALI':'CALI','TUNJA':'TUNJA','MEDELLIN':'MEDELLÍN','BARRANQUILLA':'BARRANQUILLA','BARRANQUILLA (2)':'BARRANQUILLA','AJUSTES GENERAL NOMINA':'AJUSTES','AJUSTES GENERAL NOMINA (2)':'AJUSTES','AJUSTES GENERAL NOMINA (3)':'AJUSTES','AJUSTES GENERAL NOMINA (4)':'AJUSTES','AJUSTES GENERAL NOMINA (5)':'AJUSTES','BOGOTÁ':'BOGOTÁ'};
@@ -118,9 +114,17 @@ function processFile(file) {
           });
         }
       });
+}
+
+function processFile(file) {
+  showLoad('Leyendo archivo...', 20);
+  const reader = new FileReader();
+  reader.onload = evt => {
+    try {
+      parseExcelBuffer(evt.target.result);
       showLoad('Finalizando...', 85);
       if (!allEmployees.length) { hideLoad(); showErr('No se encontraron empleados. Verifica las hojas del Excel.'); return; }
-      saveHistory(file.name); currentFile = file.name;
+      saveHistory(file.name, file); currentFile = file.name;
       setTimeout(() => {
         hideLoad(); updateDashKPIs(); buildPanel();
         navTo('empleadosView', document.querySelector('[data-view=empleadosView]'));
@@ -129,6 +133,24 @@ function processFile(file) {
     } catch(err) { hideLoad(); showErr('Error al procesar: ' + err.message); console.error(err); }
   };
   reader.readAsArrayBuffer(file);
+}
+
+function openHistoryFile(id) {
+  showLoad('Leyendo archivo...', 20);
+  getHistoryFileBuffer(id).then(rec => {
+    if (!rec || !rec.data) { hideLoad(); showToast('No se pudo encontrar el archivo guardado', 'error'); return; }
+    try {
+      parseExcelBuffer(rec.data);
+      showLoad('Finalizando...', 85);
+      if (!allEmployees.length) { hideLoad(); showErr('No se encontraron empleados. Verifica las hojas del Excel.'); return; }
+      currentFile = rec.name;
+      setTimeout(() => {
+        hideLoad(); updateDashKPIs(); buildPanel();
+        navTo('empleadosView', document.querySelector('[data-view=empleadosView]'));
+        showToast('✅ ' + allEmployees.length + ' empleados cargados','success');
+      }, 200);
+    } catch(err) { hideLoad(); showErr('Error al procesar: ' + err.message); console.error(err); }
+  }).catch(err => { hideLoad(); console.error(err); showToast('Error al abrir el archivo guardado', 'error'); });
 }
 
 function updateDashKPIs() {

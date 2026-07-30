@@ -40,44 +40,63 @@ function parseExcelBuffer(buffer) {
       allEmployees = [];
       const CITY_MAP = {'BOGOTA':'BOGOTÁ','FUNZA':'FUNZA','PASTO':'PASTO','VILLAVICENCIO':'VILLAVICENCIO','BUCARAMANGA PREST':'BUCARAMANGA','PEREIRA ':'PEREIRA','PEREIRA':'PEREIRA','CALI':'CALI','TUNJA':'TUNJA','MEDELLIN':'MEDELLÍN','BARRANQUILLA':'BARRANQUILLA','BARRANQUILLA (2)':'BARRANQUILLA','AJUSTES GENERAL NOMINA':'AJUSTES','AJUSTES GENERAL NOMINA (2)':'AJUSTES','AJUSTES GENERAL NOMINA (3)':'AJUSTES','AJUSTES GENERAL NOMINA (4)':'AJUSTES','AJUSTES GENERAL NOMINA (5)':'AJUSTES','BOGOTÁ':'BOGOTÁ'};
       wb.SheetNames.forEach(sn => {
-        const ciudad = CITY_MAP[sn] || sn;
+        const ciudadHoja = CITY_MAP[sn] || sn;
         const ws = wb.Sheets[sn], data = XLSX.utils.sheet_to_json(ws, {header:1, defval:'', raw:true});
         if (!data || data.length < 4) return;
+
+        // Período: soporta "10 AL 24 DE JULIO DE 2026" y el nuevo formato
+        // "25 DE JUNIO AL 09 DE JULIO DE 2026" (el corte cruza de mes).
         let periodo = '—';
         for (let pi = 0; pi < Math.min(5, data.length); pi++) {
           const txt = data[pi].map(c => String(c || '')).join(' ');
-          const m = txt.match(/\d+\s+(?:AL|al|-)\s*\d+\s+DE\s+\w+\s+DE\s+\d{4}/i) || txt.match(/\d+\s*[-–]\s*\d+\s+(?:DE\s+)?\w+\s+DEL?\s+\d{4}/i);
+          const m = txt.match(/\d+\s+DE\s+\w+\s+AL\s+\d+\s+DE\s+\w+\s+DE\s+\d{4}/i) ||
+                    txt.match(/\d+\s+(?:AL|al|-)\s*\d+\s+DE\s+\w+\s+DE\s+\d{4}/i) ||
+                    txt.match(/\d+\s*[-–]\s*\d+\s+(?:DE\s+)?\w+\s+DEL?\s+\d{4}/i);
           if (m) { periodo = m[0].trim(); break; }
         }
-        // Detectar fila de encabezado principal (la que tiene CEDULA y NOMBRE)
-        let headerRow = -1, cedulaCol = 0, nombreCol = 1;
+
+        // Detectar fila de encabezado principal (la que tiene ID/CEDULA y NOMBRE).
+        // El nuevo formato usa las columnas: CIUDAD | TIPO DE ID | ID | NOMBRE | SMLMV | TURNOS | HORAS | ...
+        let headerRow = -1, cedulaCol = -1, nombreCol = -1;
         for (let hi = 0; hi < Math.min(8, data.length); hi++) {
           const ru = data[hi].map(c => String(c || '').toUpperCase().trim());
-          const ci = ru.findIndex(c => c === 'CEDULA' || c === 'CÉDULA' || c === 'CC' || c === 'C.C.');
+          const ci = ru.findIndex(c => c === 'CEDULA' || c === 'CÉDULA' || c === 'CC' || c === 'C.C.' || c === 'ID');
           const ni = ru.findIndex(c => c.includes('NOMBRE'));
-          if (ci >= 0 && ni >= 0) { headerRow = hi; cedulaCol = ci; nombreCol = ni; break; }
+          const si = ru.findIndex(c => c === 'SMLMV' || c === 'SMLV' || c.includes('SMLMV') || c.includes('SMLV'));
+          // Se exige también una columna SMLMV/SMLV: distingue la tabla real de nómina
+          // de otras hojas sueltas del libro (notas, listados de asistencia, etc.)
+          // que también tienen columnas de ID/CEDULA y NOMBRE pero no son nómina.
+          if (ci >= 0 && ni >= 0 && si >= 0) { headerRow = hi; cedulaCol = ci; nombreCol = ni; break; }
         }
         if (headerRow < 0) return;
 
-        // El Excel tiene 3 filas de encabezado (main header + sub-header + CANT/VALOR)
+        // Columna de CIUDAD, si existe justo antes de la de ID (formato nuevo: CIUDAD|TIPO DE ID|ID)
+        const hRow0 = data[headerRow].map(c => String(c || '').toUpperCase().trim());
+        const ciudadCol = hRow0.findIndex(c => c === 'CIUDAD');
+
+        // El Excel tiene 3 filas de encabezado (título principal + sub-encabezado + fila CANT/VALOR)
         // Los datos empiezan en headerRow + 3
         const ds = headerRow + 3;
-        const hR = data[headerRow].map(c => String(c || '').toUpperCase().trim());
-        const find = (...keys) => { for (const k of keys) { const i = hR.findIndex(h => h.includes(k)); if (i >= 0) return i; } return -1; };
 
-        // Columnas fijas verificadas en el Excel real:
-        // Col 0: CEDULA | Col 1: NOMBRE | Col 2: SMLV | Col 3: TURNOS | Col 4: HORAS
-        // Col 5-6:  Turno Dia (CANT/VALOR)      Col 7-8:  Turno Noche (CANT/VALOR)
-        // Col 9-10: Fest Diurno                 Col 11-12: Fest Nocturno
-        // Col 13-14: HE Diurna                  Col 15-16: HE Nocturna
-        // Col 17-18: HE Fest Diurna             Col 19-20: HE Fest Nocturna
-        // Col 21-22: Recargo Nocturno           Col 23-24: Recargo Dom/Fest
-        // Col 25-26: Recargo Noct Fest
-        // Col 27: Aux Transporte | Col 28: Devengado | Col 29: Desc Prestamos
-        // Col 30: Incapacidad | Col 31: Trans Intermunic/Prestamo | Col 32: Otros/Liberalidad
-        // Col 33: Deducciones | Col 34: Total a Pagar | Col 35: Cuenta | Col 36: Obs | Col 37: Correo
-        const cTI = find('TRANSPORTE INTERMU', 'INTERMUNICIPAL');
-        const cAL = find('MERA LIBERALIDAD', 'LIBERALIDAD');
+        // Columnas calculadas en relación a la columna del ID (base), tal como están
+        // dispuestas en el archivo real:
+        // base+0: ID          base+1: NOMBRE        base+2: SMLMV
+        // base+3: TURNOS      base+4: HORAS
+        // base+5/6:  TURNO ORDINARIO   (CANT/VALOR)
+        // base+7/8:  TURNO FESTIVO     (CANT/VALOR)
+        // base+9/10: HORA EXTRA DIURNA (CANT/VALOR)
+        // base+11/12: HORA EXTRA NOCTURNA (CANT/VALOR)
+        // base+13/14: HORA EXTRA DIURNA FESTIVA (CANT/VALOR)
+        // base+15/16: HORA EXTRA NOCTURNA FESTIVA (CANT/VALOR)
+        // base+17/18: RECARGO NOCTURNO (CANT/VALOR)
+        // base+19/20: RECARGO NOCTURNO FESTIVO (CANT/VALOR)
+        // base+21: AUXILIO DE TRANSPORTE   base+22: VALOR DEVENGADO
+        // base+23: DESCUENTO PRESTAMOS Y OTROS  base+24: INCAPACIDAD
+        // base+25: TRANSPORTE INTERMUNICIPAL    base+26: OTROS PAGOS PENDIENTES
+        // base+27: DEDUCCIONES,EPS Y PENSION    base+28: TOTAL A PAGAR
+        // base+29: BANCO   base+30: No. CUENTA   base+31: OBSERVACIONES   base+32: CORREO ELECTRONICO
+        const base = cedulaCol;
+
         for (let i = ds; i < data.length; i++) {
           const row = data[i];
           let cr = clean(row[cedulaCol]); const nombre = clean(row[nombreCol]);
@@ -85,32 +104,34 @@ function parseExcelBuffer(buffer) {
           if (nombre.toLowerCase().includes('total') || nombre.toLowerCase().includes('pagar nomina')) continue;
           const cedula = cr.replace(/^(CD|PPT|PT|ppt|pt|cd)[\s.]*/i, '').trim();
           if (!cedula || isNaN(parseInt(cedula))) continue;
+          const ciudadFila = ciudadCol >= 0 ? clean(row[ciudadCol]) : '';
+          const ciudad = ciudadFila ? (CITY_MAP[ciudadFila.toUpperCase()] || ciudadFila) : ciudadHoja;
           allEmployees.push({
             ciudad, periodo, cedula, nombre,
-            smlv:          num(row[2]),
-            turnos:        num(row[3]),
-            horas:         num(row[4]),
-            turno_dia_c:   num(row[5]),  turno_dia_v:    num(row[6]),
-            fest_d_c:      num(row[9]),  fest_d_v:       num(row[10]),
-            fest_n_c:      num(row[11]), fest_n_v:       num(row[12]),
-            he_d_c:        num(row[13]), he_d_v:         num(row[14]),
-            he_n_c:        num(row[15]), he_n_v:         num(row[16]),
-            he_fd_c:       num(row[17]), he_fd_v:        num(row[18]),
-            he_fn_c:       num(row[19]), he_fn_v:        num(row[20]),
-            rec_n_c:       num(row[21]), rec_n_v:        num(row[22]),
-            rec_dom_c:     num(row[23]), rec_dom_v:      num(row[24]),
-            rec_nf_c:      num(row[25]), rec_nf_v:       num(row[26]),
-            aux_trans:     num(row[27]),
-            devengado:     num(row[28]),
-            desc_prest:    num(row[29]),
-            incapacidad:   num(row[30]),
-            trans_inter:   cTI >= 0 ? num(row[cTI]) : num(row[31]),
-            aux_lib:       cAL >= 0 ? num(row[cAL]) : num(row[32]),
-            deduc:         num(row[33]),
-            total_pagar:   num(row[34]),
-            cuenta:        clean(row[35]) || '',
-            obs:           clean(row[36]) || '',
-            correo:        clean(row[37]) || ''
+            smlv:          num(row[base+2]),
+            turnos:        num(row[base+3]),
+            horas:         num(row[base+4]),
+            turno_dia_c:   num(row[base+5]),  turno_dia_v:    num(row[base+6]),
+            fest_d_c:      num(row[base+7]),  fest_d_v:       num(row[base+8]),
+            fest_n_c:      0,                 fest_n_v:       0,
+            he_d_c:        num(row[base+9]),  he_d_v:         num(row[base+10]),
+            he_n_c:        num(row[base+11]), he_n_v:         num(row[base+12]),
+            he_fd_c:       num(row[base+13]), he_fd_v:        num(row[base+14]),
+            he_fn_c:       num(row[base+15]), he_fn_v:        num(row[base+16]),
+            rec_n_c:       num(row[base+17]), rec_n_v:        num(row[base+18]),
+            rec_nf_c:      num(row[base+19]), rec_nf_v:       num(row[base+20]),
+            aux_trans:     num(row[base+21]),
+            devengado:     num(row[base+22]),
+            desc_prest:    num(row[base+23]),
+            incapacidad:   num(row[base+24]),
+            trans_inter:   num(row[base+25]),
+            aux_lib:       num(row[base+26]),
+            deduc:         num(row[base+27]),
+            total_pagar:   num(row[base+28]),
+            banco:         clean(row[base+29]) || '',
+            cuenta:        clean(row[base+30]) || '',
+            obs:           clean(row[base+31]) || '',
+            correo:        clean(row[base+32]) || ''
           });
         }
       });

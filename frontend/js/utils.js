@@ -29,4 +29,5 @@ setInterval(() => {
     m = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][n.getMonth()],
     t = `${d}, ${String(n.getDate()).padStart(2,'0')} de ${m}. ${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
   const el = document.getElementById('topbarClock'); if (el) el.textContent = t;
-}, 1000);
+}, 
+);

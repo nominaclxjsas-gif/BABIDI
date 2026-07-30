@@ -15,7 +15,7 @@ const TARIFA_2026 = {
   hf:      13991,
   hed:     9949,
   hedf:    17112,
-  hen:     13991,
+  hen:     13928,
   henf:    21091,
   rn:      2822,
   rnf:     9152,
@@ -244,7 +244,7 @@ function buildSlipHTML(emp) {
     ingRows.push({ concepto:'AUXILIO DE TRANSPORTE', cant:e.turnos, vlrUnit:TARIFA_2026.at_dia, total:e.aux_trans });
   }
 
-  if (e.aux_lib     > 0) ingRows.push({ concepto:'AUXILIO LIBERALIDAD',       cant:'—', vlrUnit:'—', total:e.aux_lib });
+  if (e.aux_lib     > 0) ingRows.push({ concepto:'OTROS PAGOS PENDIENTES',    cant:'—', vlrUnit:'—', total:e.aux_lib });
   if (e.trans_inter > 0) ingRows.push({ concepto:'TRANSPORTE INTERMUNICIPAL', cant:'—', vlrUnit:'—', total:e.trans_inter });
   if (e.incapacidad > 0) ingRows.push({ concepto:'INCAPACIDAD EPS',           cant:'—', vlrUnit:'—', total:e.incapacidad });
 

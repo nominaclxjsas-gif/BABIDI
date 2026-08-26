@@ -286,7 +286,7 @@ ${SLIP_CSS}
     <tr>
       <td class="s-hdr-logo" style="width:120px">${logoSrc ? `<img src="${logoSrc}" alt="CL">` : ''}</td>
       <td class="s-hdr-title">
-        <div class="t1">Comprobante de Pago &mdash; ${selectedPeriod === 1 ? '25 al 31' : '1 al 15'} de ${mesStr}</div>
+        <div class="t1">Comprobante de Pago &mdash; ${selectedPeriod === 1 ? '1 al 30' : selectedPeriod === 2 ? '1 al 15' : '16 al 30'} de ${mesStr}</div>
         <div class="t2">¡Tu esfuerzo impulsa nuestra operación. Gracias por este corte de nómina!</div>
       </td>
       <td class="s-hdr-logo" style="width:120px;border-left:1px solid #1e3060;border-right:none">${logoSrc ? `<img src="${logoSrc}" alt="CL">` : ''}</td>
